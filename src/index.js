@@ -2,38 +2,65 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {createStore } from 'redux';
 
-function Counter({
-  value,
-  onIncrement,
-  onDecrement
-}) {
-  return (<div>
-      <h1>{value}</h1>
-      <button onClick={onIncrement}>+</button>
-      <button onClick={onDecrement}>-</button>
-    </div>);
-}
+const Todos = ({items}) => {
+  let listItems = items.map((item, index) => {
+    if (item.completed) {
+      return <li key={index}>#{item.id}: <strike>{item.text}</strike></li>;
+    } else {
+      return <li key={index}>#{item.id}: {item.text}</li>;
+    }
+  });
+  return <ul>{listItems}</ul>;
+};
 
-const counter = (state = 0, action) => {
+const todos = (state = [], action) => {
   switch (action.type) {
-    case "INCREMENT":
-      return state + 1;
-    case "DECREMENT":
-      return state - 1;
+    case "ADD_TODO":
+      return [
+        ...state,
+        {
+          id: action.id,
+          text: action.text,
+          completed: action.completed
+        }
+      ];
+    case 'TOGGLE_TODO':
+      return state.map(todo => {
+        if (todo.id === action.id) {
+          return {
+            ...todo,
+            completed: !todo.completed
+          }
+        } else {
+          return todo;
+        }
+      })
     default:
       return state;
   }
 };
 
-let store = createStore(counter);
+let store = createStore(todos);
 
 const render = () => {
-  ReactDOM.render(<Counter
-                    value={store.getState()}
-                    onIncrement={() => store.dispatch({type: 'INCREMENT'})}
-                    onDecrement={() => store.dispatch({type: 'DECREMENT'})} />,
+  ReactDOM.render(<Todos items={store.getState()} />,
                   document.getElementById('app'));
 };
 
 store.subscribe(render);
 render();
+
+console.log('------- state --------');
+console.log(store.getState());
+console.log('------> dispatch: ADD_TODO');
+store.dispatch({type: 'ADD_TODO', id: 0, text: 'Clean room', completed: true});
+console.log('------- state --------');
+console.log(store.getState());
+console.log('------> dispatch: ADD_TODO');
+store.dispatch({type: 'ADD_TODO', id: 1, text: 'Do dishes', completed: true});
+console.log('------- state --------');
+console.log(store.getState());
+console.log('------> dispatch: TOGGLE_TODO');
+store.dispatch({type: 'TOGGLE_TODO', id: 0});
+console.log('------- state --------');
+console.log(store.getState());
