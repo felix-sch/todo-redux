@@ -1,9 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {createStore } from 'redux';
+import {createStore, combineReducers} from 'redux';
 
-const Todos = ({ items }) => {
-  let listItems = items.map((item, index) => {
+const Todos = ({ items, filter }) => {
+  let listItems = items.filter((item) => {
+    if (filter === 'SHOW_ALL') {
+      return true;
+    } else if (filter === 'SHOW_COMPLETED') {
+      return item.completed;
+    }
+  }).map((item, index) => {
     if (item.completed) {
       return <li key={index}>#{item.id}: <strike>{item.text}</strike></li>;
     } else {
@@ -58,12 +64,10 @@ const filter = (state = 'SHOW_ALL', action) => {
   }
 };
 
-const todoApp = (state = {}, action) => {
-  return {
-    todos: todos(state.todos, action),
-    filter: filter(state.filter, action)
-  };
-};
+const todoApp = combineReducers({
+  todos: todos,  // or just todos
+  filter: filter // or just filter
+});
 
 let store = createStore(todoApp);
 
@@ -83,6 +87,5 @@ store.dispatch({
   text: "Clean room",
   completed: true
 });
-store.dispatch({ type: "ADD_TODO", id: 1, text: "Do dishes", completed: true });
-store.dispatch({ type: "TOGGLE_TODO", id: 0 });
+store.dispatch({ type: "ADD_TODO", id: 1, text: "Do dishes", completed: false });
 store.dispatch({ type: "SET_FILTER", filter: 'SHOW_COMPLETED'});
